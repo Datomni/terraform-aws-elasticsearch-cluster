@@ -14,7 +14,8 @@ provider "aws" {
 }
 
 module "elasticsearch-cluster" {
-  source = "Datomni/elasticsearch-cluster/aws"
+#  source = "Datomni/elasticsearch-cluster/aws"
+  source = "git::https://github.com/Datomni/terraform-aws-elasticsearch-cluster.git?ref=dev"
 
   domain_name     = var.domain_name
   master_user     = var.master_user
