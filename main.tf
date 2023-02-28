@@ -1,33 +1,33 @@
 resource "aws_cloudwatch_log_group" "cloudwatch_log_group" {
-  name              = "elasticsearch_cluster_logs"
+  name              = "${var.domain_name}_logs"
   retention_in_days = 7
 }
 
 resource "aws_cloudwatch_log_resource_policy" "cloudwatch_log_group_policy" {
-  policy_name     = "elasticsearch_cluster_logs_policy"
+  policy_name = "${var.domain_name}_logs_policy"
   policy_document = jsonencode({
     "Version" = "2012-10-17",
     "Statement" = [
       {
         "Effect" = "Allow",
         "Principal" = {
-        "Service" = "es.amazonaws.com"
+          "Service" = "es.amazonaws.com"
         },
         "Action" = [
-        "logs:PutLogEvents",
-        "logs:PutLogEventsBatch",
-        "logs:CreateLogStream"
-      ],
-      "Resource" = "arn:aws:logs:*"
-    }
-  ]
-})
+          "logs:PutLogEvents",
+          "logs:PutLogEventsBatch",
+          "logs:CreateLogStream"
+        ],
+        "Resource" = "arn:aws:logs:*"
+      }
+    ]
+  })
 }
 
 
 resource "aws_elasticsearch_domain" "elasticsearch_domain" {
-  domain_name           = "elasticsearch-cluster"
-  elasticsearch_version = "7.10"
+  domain_name           = var.domain_name
+  elasticsearch_version = var.elasticsearch_version
 
   encrypt_at_rest {
     enabled = true
@@ -49,7 +49,7 @@ resource "aws_elasticsearch_domain" "elasticsearch_domain" {
   }
 
   auto_tune_options {
-    desired_state = "ENABLED"
+    desired_state       = "ENABLED"
     rollback_on_disable = "NO_ROLLBACK"
   }
 
@@ -79,20 +79,20 @@ resource "aws_elasticsearch_domain_policy" "main" {
   domain_name = aws_elasticsearch_domain.elasticsearch_domain.domain_name
 
   access_policies = jsonencode(
-{
-    "Version" = "2012-10-17",
-    "Statement" = [
+    {
+      "Version" = "2012-10-17",
+      "Statement" = [
         {
-            "Action" = "es:*",
-            "Principal" = "*",
-            "Effect" = "Allow",
-            "Condition" = {
-                "IpAddress" = {
-                  "aws:SourceIp" = var.allow_ip_list
-                }
-            },
-            "Resource" = "${aws_elasticsearch_domain.elasticsearch_domain.arn}/*"
+          "Action"    = "es:*",
+          "Principal" = "*",
+          "Effect"    = "Allow",
+          "Condition" = {
+            "IpAddress" = {
+              "aws:SourceIp" = var.allow_ip_list
+            }
+          },
+          "Resource" = "${aws_elasticsearch_domain.elasticsearch_domain.arn}/*"
         }
-    ]
-})
+      ]
+  })
 }
