@@ -49,7 +49,7 @@ resource "aws_elasticsearch_domain" "elasticsearch_domain" {
   }
 
   auto_tune_options {
-    desired_state       = "ENABLED"
+    desired_state       = "DISABLED"
     rollback_on_disable = "NO_ROLLBACK"
   }
 
